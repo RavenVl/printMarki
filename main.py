@@ -71,11 +71,11 @@ def printMarki(marki_path='marki.dbf'):
     for id, el in rez.items():
         print(el.name)
         if el.subgroup:
-            print('     ', el.subgroup)
-
-
-def printMarki2(marki_path='marki.dbf'):
-    pass
+            for el_sub in el.subgroup:
+                print('  ', el_sub.name)
+                if el_sub.subgroup:
+                    for el_sub2 in el_sub.subgroup:
+                        print('      ', el_sub2.name)
 
 
 if __name__ == '__main__':
