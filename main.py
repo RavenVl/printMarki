@@ -1,11 +1,14 @@
+from pprint import pprint
+
 from dbfread import DBF
 
 
 class Group:
-    def __init__(self, name, subgroup, prevgroup=None):
+    def __init__(self, name, subgroup, order_sort, prevgroup=None):
         self.name = name
         self.subgroup = subgroup
         self.prevgroup = prevgroup
+        self.order_sort = order_sort
 
     def __str__(self):
         return self.name
@@ -32,13 +35,14 @@ def change_kodur(kodur, group):
 
 def printMarki(marki_path='marki.dbf'):
     marki_arr = []
-    for record in DBF(marki_path, lowernames=True):
+    for i, record in enumerate(DBF(marki_path, lowernames=True)):
         temp_marka = change_kodur(record['kodur'], record['group'])
         marki_arr.append({
             'group': record['group'],
             'naim': record['naim'],
             'kodur': temp_marka['kodur'],
-            'prevgroup': temp_marka['prevgroup']
+            'prevgroup': temp_marka['prevgroup'],
+            'order_sort': i,
         })
 
     rez = dict()
@@ -46,9 +50,12 @@ def printMarki(marki_path='marki.dbf'):
     for record in marki_arr:
         if record['group']:
             if record['prevgroup'] is None:
-                rez[record['kodur'].strip()] = Group(name=record['naim'], subgroup=[])
+                rez[record['kodur'].strip()] = Group(name=record['naim'], subgroup=[], order_sort=record['order_sort'])
             else:
-                rez[record['kodur'].strip()] = Group(name=record['naim'], subgroup=[], prevgroup=record['prevgroup'])
+                rez[record['kodur'].strip()] = Group(name=record['naim'],
+                                                     subgroup=[],
+                                                     order_sort=record['order_sort'],
+                                                     prevgroup=record['prevgroup'])
 
     for record in marki_arr:
         if record['group'] is None:
@@ -57,18 +64,18 @@ def printMarki(marki_path='marki.dbf'):
             rez_temp_kodur = rez.get(index)
 
             if rez_temp_kodur:
-                rez_temp_kodur.subgroup.append(Group(name=record['naim'], subgroup=[]))
+                rez_temp_kodur.subgroup.append(Group(name=record['naim'], subgroup=[], order_sort=record['order_sort']))
             else:
-                rez[record['kodur'].strip()] = Group(name=record['naim'], subgroup=[])
+                rez[record['kodur'].strip()] = Group(name=record['naim'], subgroup=[], order_sort=record['order_sort'])
     del_arr = []
-    for id, record in rez.items():
+    for id_, record in rez.items():
         if record.prevgroup is not None:
-            rez[record.prevgroup].subgroup.append(rez[id])
-            del_arr.append(id)
+            rez[record.prevgroup].subgroup.append(rez[id_])
+            del_arr.append(id_)
     for el in del_arr:
         del rez[el]
 
-    for id, el in rez.items():
+    for id_, el in sorted(rez.items(), key=lambda el: el[1].order_sort):
         print(el.name)
         if el.subgroup:
             for el_sub in el.subgroup:
