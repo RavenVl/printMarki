@@ -46,7 +46,7 @@ def print_result(rez):
 
 def printMarki(marki_path='marki.dbf'):
     marki_arr = []
-    # transferring dbf to dict for easier handling
+    # перенос dbf в dict для упрощения обработки
     for i, record in enumerate(DBF(marki_path, lowernames=True)):
         temp_marka = change_kodur(record['kodur'], record['group'])
         marki_arr.append({
@@ -58,7 +58,7 @@ def printMarki(marki_path='marki.dbf'):
         })
 
     rez = dict()
-    # обработка групп с подгруппами
+
     for record in marki_arr:
         if record['group']:
             if record['prevgroup'] is None:
@@ -68,7 +68,7 @@ def printMarki(marki_path='marki.dbf'):
                                                      subgroup=[],
                                                      order_sort=record['order_sort'],
                                                      prevgroup=record['prevgroup'])
-    # обработка подгрупп
+
     for record in marki_arr:
         if record['group'] is None:
             index = record['kodur'].strip().split()[0]
@@ -79,8 +79,6 @@ def printMarki(marki_path='marki.dbf'):
                 rez_temp_kodur.subgroup.append(Group(name=record['naim'], subgroup=[], order_sort=record['order_sort']))
             else:
                 rez[record['kodur'].strip()] = Group(name=record['naim'], subgroup=[], order_sort=record['order_sort'])
-
-    # добавление вложенных подгрупп
     del_arr = []
     for id_, record in rez.items():
         if record.prevgroup is not None:
